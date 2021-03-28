@@ -20,48 +20,30 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-/*
- * Función de liberación de elemento (free o similar)
- */
-typedef void (*VectorFreeFn)(void* element);
-
-/*
- * Función que recorre elementos
- */
-typedef void (*VectorClosureFn)(void* element);
-
 typedef struct
 {
-    void* Elements;
-    size_t ElemSize;
-    size_t Size;
-    size_t Capacity;
-    VectorFreeFn FreeFn;
-} vector;
-
-/*
- * Inicializador estático (à la pthreads) para la muy utilizada abstracción "vector de strings"
- */
-void _vector_of_strings_free_fn(void* pstr);
-
-#define VECTOR_OF_STRINGS_INITIALIZER \
-    { NULL, sizeof(char*), 0, 0, _vector_of_strings_free_fn }
+    void* elements;
+    size_t element_size;
+    size_t size;
+    size_t allocated_size;
+    void (*element_destroyer)(void*);
+} t_vector;
 
 /**
- * @NAME: vector_construct
+ * @NAME: vector_create
  * @DESC: Construye un nuevo vector in-place
- * elementSize: tamaño de los elementos que guardara el vector normalmente sizeof(tipo-elemento)
- * freeFn: funcion llamada para destruir los elementos en sí, si es distinta a NULL 
- * initialCapacity: reserva inicial de memoria para guardar 'initialCapacity' elementos (puede ser 0)
+ * element_size: tamaño de los elementos que guardara el vector normalmente sizeof(tipo-elemento)
+ * element_destroyer: funcion llamada para destruir los elementos en sí, si es distinta a NULL 
+ * initial_allocated_size: reserva inicial de memoria para guardar 'initialallocated_size' elementos (puede ser 0)
  */
-void vector_construct(vector* v, size_t elementSize, VectorFreeFn freeFn, size_t initialCapacity);
+void vector_create(t_vector* v, size_t element_size, void (*element_destroyer)(void*), size_t initial_allocated_size);
 
 /**
- * @NAME: vector_destruct
+ * @NAME: vector_destroy
  * @DESC: Libera la memoria reservada por las estructuras
  * destruyendo los elementos con la funcion pasada como parametro al construir, si no es NULL
  */
-void vector_destruct(vector* v);
+void vector_destroy(t_vector* v);
 
 // C++ like interface
 
@@ -69,133 +51,133 @@ void vector_destruct(vector* v);
  * @NAME: vector_size
  * @DESC: Devuelve tamaño del vector
  */
-size_t vector_size(vector const* v);
+size_t vector_size(t_vector* v);
 
 /**
- * @NAME: vector_resize
+ * @NAME: vector_resize_fill
  * @DESC: Cambia el tamaño del vector eliminando o insertando elementos
  * Los elementos insertados serán copias del elemento pasado por parámetro
  */
-void vector_resize(vector* v, size_t n, void const* elem);
+void vector_resize_fill(t_vector* v, size_t n, void* elem);
 
 /**
- * @NAME: vector_resize_zero
+ * @NAME: vector_resize_fill_zero
  * @DESC: Cambia el tamaño del vector eliminando o insertando elementos
  * Los elementos insertados serán inicializados en 0
  */
-void vector_resize_zero(vector* v, size_t n);
+void vector_resize_fill_zero(t_vector* v, size_t n);
 
 /**
- * @NAME: vector_capacity
+ * @NAME: vector_allocated_size
  * @DESC: Devuelve capacidad actual de elementos
  */
-size_t vector_capacity(vector const* v);
+size_t vector_allocated_size(t_vector* v);
 
 /**
- * @NAME: vector_empty
- * @DESC: Devuelve true ssi el vector está vacio
+ * @NAME: vector_is_empty
+ * @DESC: Devuelve true si el vector está vacio
  */
-bool vector_empty(vector const* v);
+bool vector_is_empty(t_vector* v);
 
 /**
- * @NAME: vector_reserve
+ * @NAME: vector_reallocate
  * @DESC: Se asegura que la capacidad alocada sea de al menos n elementos
  * No cambia ningún elemento actual
  */
-void vector_reserve(vector* v, size_t n);
+void vector_reallocate(t_vector* v, size_t n);
 
 /**
- * @NAME: vector_shrink_to_fit
+ * @NAME: vector_reallocate_to_size
  * @DESC: Encoge la capacidad del vector de forma tal que sólo quepan
  * sus elementos actuales. A diferencia del estándar, siempre efectúa la operación
  * en caso de ser necesaria.
  */
-void vector_shrink_to_fit(vector* v);
+void vector_reallocate_to_size(t_vector* v);
 
 /**
- * @NAME: vector_at
- * @DESC: Devuelve el elemento en la posición i-ésima.
+ * @NAME: vector_get
+ * @DESC: Devuelve el elemento en la posición indicada.
  */
-void* vector_at(vector const* v, size_t i);
+void* vector_get(t_vector* v, size_t pos);
 
 /**
- * @NAME: vector_front
+ * @NAME: vector_first
  * @DESC: Devuelve el primer elemento
  */
-void* vector_front(vector const* v);
+void* vector_first(t_vector* v);
 
 /**
- * @NAME: vector_back
+ * @NAME: vector_last
  * @DESC: Devuelve el último elemento
  */
-void* vector_back(vector const* v);
+void* vector_last(t_vector* v);
 
 /**
  * @NAME: vector_data
  * @DESC: Devuelve el arreglo de datos
  */
-void* vector_data(vector const* v);
+void* vector_data(t_vector* v);
 
 /**
- * @NAME: vector_push_back
+ * @NAME: vector_push_last
  * @DESC: Inserta un elemento al final
  */
-void vector_push_back(vector* v, void const* elem);
+void vector_push_last(t_vector* v, void* elem);
 
 /**
- * @NAME: vector_pop_back
+ * @NAME: vector_pop_last
  * @DESC: Elimina el último elemento
  */
-void vector_pop_back(vector* v);
+void vector_pop_last(t_vector* v);
 
 /**
- * @NAME; vector_insert
+ * @NAME; vector_add
  * @DESC: Inserta un único valor en la posición 'pos'
  */
-void vector_insert(vector* v, size_t pos, void const* elem);
+void vector_add(t_vector* v, size_t pos, void* elem);
 
 /**
- * @NAME: vector_insert_fill
+ * @NAME: vector_add_fill
  * @DESC: Inserta n copias del elemento elem a partir de la posición 'pos'
  */
-void vector_insert_fill(vector* v, size_t pos, size_t n, void const* elem);
+void vector_add_fill(t_vector* v, size_t pos, size_t n, void* elem);
 
 /**
- * @NAME: vector_insert_range
+ * @NAME: vector_add_from_array
  * @DESC: Inserta valores desde un arreglo, entre la posicion begin, hasta la end exclusive
  * En otras palabras, rango cerrado abierto [begin, end)
  */
-void vector_insert_range(vector* v, size_t pos, void* begin, void* end);
+void vector_add_from_array(t_vector* v, size_t pos, void* begin, void* end);
 
 /**
- * @NAME: vector_erase
+ * @NAME: vector_remove
  * @DESC: Borra el elemento ubicado en 'pos'
  */
-void vector_erase(vector* v, size_t pos);
+void vector_remove(t_vector* v, size_t pos);
 
 /**
- * @NAME: vector_erase_range
+ * @NAME: vector_remove_range
  * @DESC: Borra los elementos en el rango de posiciones cerrado abierto [begin, end)
  */
-void vector_erase_range(vector* v, size_t begin, size_t end);
+void vector_remove_range(t_vector* v, size_t begin, size_t end);
 
 /**
- * @NAME: vector_swap
+ * @NAME: vector_swap_data
  * @DESC: Intercambia contenidos con otro vector
  */
-void vector_swap(vector* v, vector* other);
+void vector_swap_data(t_vector* v, t_vector* other);
 
 /**
- * @NAME: vector_clear
+ * @NAME: vector_clean
  * @DESC: Limpia los elementos
  */
-void vector_clear(vector* v);
+void vector_clean(t_vector* v);
 
 // Non-C++ interface
 /**
  * @NAME: vector_iterate
  * @DESC: Itera los elementos con una función
  */
-void vector_iterate(vector const* v, VectorClosureFn closureFn);
+void vector_iterate(t_vector* v, void (*closure)(void*));
 
 #endif //vector_h__

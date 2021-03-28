@@ -19,253 +19,247 @@
 #include <stdlib.h>
 #include <string.h>
 
-void _vector_of_strings_free_fn(void* pstr)
+inline static void* _calculate_offset(void* array, size_t pos, size_t element_size)
 {
-    char** string = pstr;
-    free(*string);
+    return ((char*) array) + pos * element_size;
 }
 
-inline static void* _calculateOffset(void* array, size_t pos, size_t elemSize)
+inline static size_t _calculate_growth(t_vector* v, size_t new_size)
 {
-    return ((char*) array) + pos * elemSize;
-}
-
-inline static size_t _calculateGrowth(vector const* v, size_t newSize)
-{
-    size_t geometric = v->Capacity + v->Capacity / 2;
-    if (geometric < newSize)
-        return newSize;
+    size_t geometric = v->allocated_size + v->allocated_size / 2;
+    if (geometric < new_size)
+        return new_size;
     return geometric;
 }
 
-void vector_construct(vector* v, size_t elementSize, VectorFreeFn freeFn, size_t initialCapacity)
+void vector_create(t_vector* v, size_t element_size, void (*element_destroyer)(void*), size_t initial_allocated_size)
 {
-    v->Elements = NULL;
-    v->ElemSize = elementSize;
-    v->Size = 0;
-    v->Capacity = initialCapacity;
-    if (initialCapacity)
-        v->Elements = malloc(initialCapacity * elementSize);
-    v->FreeFn = freeFn;
+    v->elements = NULL;
+    v->element_size = element_size;
+    v->size = 0;
+    v->allocated_size = initial_allocated_size;
+    if (initial_allocated_size)
+        v->elements = malloc(initial_allocated_size * element_size);
+    v->element_destroyer = element_destroyer;
 }
 
-size_t vector_size(vector const* v)
+size_t vector_size(t_vector* v)
 {
-    return v->Size;
+    return v->size;
 }
 
-void vector_resize(vector* v, size_t n, void const* elem)
+void vector_resize_fill(t_vector* v, size_t n, void* elem)
 {
-    size_t oldsize = v->Size;
+    size_t oldsize = v->size;
 
     if (n < oldsize)
-        vector_erase_range(v, n, v->Size);
+        vector_remove_range(v, n, v->size);
     else if (n > oldsize)
     {
-        vector_reserve(v, n);
+        // vector_reallocate(v, n);
 
         // fill rest with elem
-        vector_insert_fill(v, oldsize, n - oldsize, elem);
+        vector_add_fill(v, oldsize, n - oldsize, elem);
     }
 }
 
-void vector_resize_zero(vector* v, size_t n)
+void vector_resize_fill_zero(t_vector* v, size_t n)
 {
-    size_t oldsize = v->Size;
+    size_t oldsize = v->size;
     if (n < oldsize)
-        vector_erase_range(v, n, v->Size);
+        vector_remove_range(v, n, v->size);
     else
     {
-        vector_reserve(v, n);
+        vector_reallocate(v, n);
 
-        memset(_calculateOffset(v->Elements, oldsize, v->ElemSize), 0, (n - oldsize) * v->ElemSize);
-        v->Size = n;
+        memset(_calculate_offset(v->elements, oldsize, v->element_size), 0, (n - oldsize) * v->element_size);
+        v->size = n;
     }
 }
 
-size_t vector_capacity(vector const* v)
+size_t vector_allocated_size(t_vector* v)
 {
-    return v->Capacity;
+    return v->allocated_size;
 }
 
-bool vector_empty(vector const* v)
+bool vector_is_empty(t_vector* v)
 {
-    return !v->Size;
+    return !v->size;
 }
 
-void vector_reserve(vector* v, size_t n)
+void vector_reallocate(t_vector* v, size_t n)
 {
-    if (n <= v->Capacity)
+    if (n <= v->allocated_size)
         return;
 
-    v->Elements = realloc(v->Elements, n * v->ElemSize);
-    v->Capacity = n;
+    v->elements = realloc(v->elements, n * v->element_size);
+    v->allocated_size = n;
 }
 
-void vector_shrink_to_fit(vector* v)
+void vector_reallocate_to_size(t_vector* v)
 {
-    if (v->Capacity == v->Size)
+    if (v->allocated_size == v->size)
         return;
 
-    if (!v->Size)
+    if (!v->size)
     {
-        free(v->Elements);
-        v->Elements = NULL;
-        v->Capacity = 0;
+        free(v->elements);
+        v->elements = NULL;
+        v->allocated_size = 0;
     }
     else
     {
-        v->Elements = realloc(v->Elements, v->Size * v->ElemSize);
-        v->Capacity = v->Size;
+        v->elements = realloc(v->elements, v->size * v->element_size);
+        v->allocated_size = v->size;
     }
 }
 
-void* vector_at(vector const* v, size_t i)
+void* vector_get(t_vector* v, size_t i)
 {
-    assert(v->Elements && i < v->Size);
-    return _calculateOffset(v->Elements, i, v->ElemSize);
+    assert(v->elements && i < v->size);
+    return _calculate_offset(v->elements, i, v->element_size);
 }
 
-void* vector_front(vector const* v)
+void* vector_first(t_vector* v)
 {
-    assert(v->Elements);
-    return _calculateOffset(v->Elements, 0, v->ElemSize);
+    assert(v->elements);
+    return _calculate_offset(v->elements, 0, v->element_size);
 }
 
-void* vector_back(vector const* v)
+void* vector_last(t_vector* v)
 {
-    assert(v->Elements && v->Size);
-    return vector_at(v, v->Size - 1);
+    assert(v->elements && v->size);
+    return vector_get(v, v->size - 1);
 }
 
-void* vector_data(vector const* v)
+void* vector_data(t_vector* v)
 {
-    return v->Elements;
+    return v->elements;
 }
 
-void vector_push_back(vector* v, void const* elem)
+void vector_push_last(t_vector* v, void* elem)
 {
-    if (v->Capacity == v->Size)
-        vector_reserve(v, _calculateGrowth(v, v->Size + 1));
+    if (v->allocated_size == v->size)
+        vector_reallocate(v, _calculate_growth(v, v->size + 1));
 
-    memcpy(_calculateOffset(v->Elements, v->Size, v->ElemSize), elem, v->ElemSize);
-    ++v->Size;
+    memcpy(_calculate_offset(v->elements, v->size, v->element_size), elem, v->element_size);
+    ++v->size;
 }
 
-void vector_pop_back(vector* v)
+void vector_pop_last(t_vector* v)
 {
-    assert(v->Size);
-    vector_erase(v, v->Size - 1);
+    assert(v->size);
+    vector_remove(v, v->size - 1);
 }
 
-void vector_insert(vector* v, size_t pos, void const* elem)
+void vector_add(t_vector* v, size_t pos, void* elem)
 {
-    vector_insert_fill(v, pos, 1, elem);
+    vector_add_fill(v, pos, 1, elem);
 }
 
-void vector_insert_fill(vector* v, size_t pos, size_t n, void const* elem)
+void vector_add_fill(t_vector* v, size_t pos, size_t n, void* elem)
 {
-    assert(pos <= v->Size);
-    if (n == 1 && pos == v->Size) // special case
+    assert(pos <= v->size);
+    if (n == 1 && pos == v->size) // special case
     {
-        vector_push_back(v, elem);
+        vector_push_last(v, elem);
         return;
     }
 
-    if (n > (v->Capacity - v->Size))
-        vector_reserve(v, _calculateGrowth(v, v->Size + n));
+    if (n > (v->allocated_size - v->size))
+        vector_reallocate(v, _calculate_growth(v, v->size + n));
 
-    void* start = _calculateOffset(v->Elements, pos, v->ElemSize);
-    void* end = _calculateOffset(v->Elements, pos + n, v->ElemSize);
-    size_t const blockSize = (v->Size - pos) * v->ElemSize;
+    void* start = _calculate_offset(v->elements, pos, v->element_size);
+    void* end = _calculate_offset(v->elements, pos + n, v->element_size);
+    size_t blocksize = (v->size - pos) * v->element_size;
 
-    memmove(end, start, blockSize);
+    memmove(end, start, blocksize);
     for (size_t i = 0; i < n; ++i)
-        memcpy(_calculateOffset(start, i, v->ElemSize), elem, v->ElemSize);
-    v->Size += n;
+        memcpy(_calculate_offset(start, i, v->element_size), elem, v->element_size);
+    v->size += n;
 }
 
-void vector_insert_range(vector* v, size_t pos, void* begin, void* end)
+void vector_add_from_array(t_vector* v, size_t pos, void* begin, void* end)
 {
-    assert(pos <= v->Size);
+    assert(pos <= v->size);
     if (begin == end)
         return;
 
-    size_t n = ((char*)end - (char*)begin) / v->ElemSize;
-    if (n == 1 && pos == v->Size) // special case
+    size_t n = ((char*)end - (char*)begin) / v->element_size;
+    if (n == 1 && pos == v->size) // special case
     {
-        vector_push_back(v, begin);
+        vector_push_last(v, begin);
         return;
     }
 
-    if (n > (v->Capacity - v->Size))
-        vector_reserve(v, _calculateGrowth(v, v->Size + n));
+    if (n > (v->allocated_size - v->size))
+        vector_reallocate(v, _calculate_growth(v, v->size + n));
 
-    void* shiftSrc = _calculateOffset(v->Elements, pos, v->ElemSize);
-    void* shiftDst = _calculateOffset(v->Elements, pos + n, v->ElemSize);
-    size_t const blockSize = (v->Size - pos) * v->ElemSize;
+    void* shiftSrc = _calculate_offset(v->elements, pos, v->element_size);
+    void* shiftDst = _calculate_offset(v->elements, pos + n, v->element_size);
+    size_t blocksize = (v->size - pos) * v->element_size;
 
-    if (blockSize)
-        memmove(shiftDst, shiftSrc, blockSize);
+    if (blocksize)
+        memmove(shiftDst, shiftSrc, blocksize);
 
-    memcpy(shiftSrc, begin, n * v->ElemSize);
-    v->Size += n;
+    memcpy(shiftSrc, begin, n * v->element_size);
+    v->size += n;
 }
 
-void vector_erase(vector* v, size_t pos)
+void vector_remove(t_vector* v, size_t pos)
 {
-    assert(pos < v->Size);
-    vector_erase_range(v, pos, pos + 1);
+    assert(pos < v->size);
+    vector_remove_range(v, pos, pos + 1);
 }
 
-void vector_erase_range(vector* v, size_t begin, size_t end)
+void vector_remove_range(t_vector* v, size_t begin, size_t end)
 {
-    assert(begin < v->Size);
-    assert(end <= v->Size);
+    assert(begin < v->size);
+    assert(end <= v->size);
 
     size_t n = end - begin;
-    if (v->FreeFn)
+    if (v->element_destroyer)
     {
         for (size_t i = begin; i < end; ++i)
-            v->FreeFn(_calculateOffset(v->Elements, i, v->ElemSize));
+            v->element_destroyer(_calculate_offset(v->elements, i, v->element_size));
     }
 
     // shift needed
-    if (end < v->Size)
+    if (end < v->size)
     {
-        void* shiftSrc = _calculateOffset(v->Elements, end, v->ElemSize);
-        void* shiftDst = _calculateOffset(v->Elements, begin, v->ElemSize);
-        size_t const blockSize = (v->Size - end) * v->ElemSize;
-        memmove(shiftDst, shiftSrc, blockSize);
+        void* shiftSrc = _calculate_offset(v->elements, end, v->element_size);
+        void* shiftDst = _calculate_offset(v->elements, begin, v->element_size);
+        size_t blocksize = (v->size - end) * v->element_size;
+        memmove(shiftDst, shiftSrc, blocksize);
     }
 
-    v->Size -= n;
+    v->size -= n;
 }
 
-void vector_swap(vector* v, vector* other)
+void vector_swap_data(t_vector* v, t_vector* other)
 {
     //POD should copy
-    vector me = *v;
+    t_vector me = *v;
     *v = *other;
     *other = me;
 }
 
-void vector_clear(vector* v)
+void vector_clean(t_vector* v)
 {
-    if (v->FreeFn)
-        vector_iterate(v, v->FreeFn);
-    v->Size = 0;
+    if (v->element_destroyer)
+        vector_iterate(v, v->element_destroyer);
+    v->size = 0;
 }
 
-void vector_iterate(vector const* v, VectorClosureFn closureFn)
+void vector_iterate(t_vector* v, void (*closureFn)(void*))
 {
-    for (size_t i = 0; i < v->Size; ++i)
-        closureFn(_calculateOffset(v->Elements, i, v->ElemSize));
+    for (size_t i = 0; i < v->size; ++i)
+        closureFn(_calculate_offset(v->elements, i, v->element_size));
 }
 
-void vector_destruct(vector* v)
+void vector_destroy(t_vector* v)
 {
-    if (v->FreeFn)
-        vector_iterate(v, v->FreeFn);
-    free(v->Elements);
+    if (v->element_destroyer)
+        vector_iterate(v, v->element_destroyer);
+    free(v->elements);
 }
