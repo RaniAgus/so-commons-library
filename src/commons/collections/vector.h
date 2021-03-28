@@ -126,9 +126,10 @@ void vector_push_last(t_vector* v, void* elem);
 
 /**
  * @NAME: vector_pop_last
- * @DESC: Elimina el último elemento
+ * @DESC: Quita el último elemento, dejando una copia en dest.
+ * Si dest es NULL, lo destruye llamando al element_destroyer.
  */
-void vector_pop_last(t_vector* v);
+void vector_pop_last(t_vector* v, void* dest);
 
 /**
  * @NAME; vector_add
@@ -151,15 +152,17 @@ void vector_add_from_array(t_vector* v, size_t pos, void* begin, void* end);
 
 /**
  * @NAME: vector_remove
- * @DESC: Borra el elemento ubicado en 'pos'
+ * @DESC: Quita el elemento ubicado en 'pos', dejando una copia en dest.
+ * Si dest es NULL, lo destruye llamando al element_destroyer.
  */
-void vector_remove(t_vector* v, size_t pos);
+void vector_remove(t_vector* v, size_t pos, void* dest);
 
 /**
  * @NAME: vector_remove_range
- * @DESC: Borra los elementos en el rango de posiciones cerrado abierto [begin, end)
+ * @DESC: Quita los elementos en el rango de posiciones cerrado abierto [begin, end)
+ * dejando una copia en dest. Si dest es NULL, lo destruye llamando al element_destroyer.
  */
-void vector_remove_range(t_vector* v, size_t begin, size_t end);
+void vector_remove_range(t_vector* v, size_t begin, size_t end, void* dest);
 
 /**
  * @NAME: vector_swap_data

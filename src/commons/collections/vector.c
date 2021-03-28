@@ -53,7 +53,7 @@ void vector_resize_fill(t_vector* v, size_t n, void* elem)
     size_t oldsize = v->size;
 
     if (n < oldsize)
-        vector_remove_range(v, n, v->size);
+        vector_remove_range(v, n, v->size, NULL);
     else if (n > oldsize)
     {
         // vector_reallocate(v, n);
@@ -67,7 +67,7 @@ void vector_resize_fill_zero(t_vector* v, size_t n)
 {
     size_t oldsize = v->size;
     if (n < oldsize)
-        vector_remove_range(v, n, v->size);
+        vector_remove_range(v, n, v->size, NULL);
     else
     {
         vector_reallocate(v, n);
@@ -146,10 +146,10 @@ void vector_push_last(t_vector* v, void* elem)
     ++v->size;
 }
 
-void vector_pop_last(t_vector* v)
+void vector_pop_last(t_vector* v, void* dest)
 {
     assert(v->size);
-    vector_remove(v, v->size - 1);
+    vector_remove(v, v->size - 1, dest);
 }
 
 void vector_add(t_vector* v, size_t pos, void* elem)
@@ -206,19 +206,21 @@ void vector_add_from_array(t_vector* v, size_t pos, void* begin, void* end)
     v->size += n;
 }
 
-void vector_remove(t_vector* v, size_t pos)
+void vector_remove(t_vector* v, size_t pos, void* dest)
 {
     assert(pos < v->size);
-    vector_remove_range(v, pos, pos + 1);
+    vector_remove_range(v, pos, pos + 1, dest);
 }
 
-void vector_remove_range(t_vector* v, size_t begin, size_t end)
+void vector_remove_range(t_vector* v, size_t begin, size_t end, void* dest)
 {
     assert(begin < v->size);
     assert(end <= v->size);
 
     size_t n = end - begin;
-    if (v->element_destroyer)
+    if (dest)
+        memcpy(dest, _calculate_offset(v->elements, begin, v->element_size), n * v->element_size);
+    else if (v->element_destroyer)
     {
         for (size_t i = begin; i < end; ++i)
             v->element_destroyer(_calculate_offset(v->elements, i, v->element_size));

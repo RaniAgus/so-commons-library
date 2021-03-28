@@ -155,7 +155,7 @@ context (test_vector)
                 {
                     t_person* old = vector_get(&vec, 3);
                     assert_person(old, "Ezequiel", 25);
-                    vector_remove(&vec, 3);
+                    vector_remove(&vec, 3, NULL);
                 }
                 vector_add(&vec, 3, &daniela);
 
@@ -166,6 +166,23 @@ context (test_vector)
                 assert_person_at_position(&vec, 4, "Facundo"  , 25);
             } end
 
+            it("should remove a value at index")
+            {
+                should_int(vector_size(&vec)) be equal to(5);
+
+                {
+                    t_person removed;
+                    assert_person(vector_first(&vec), "Matias", 24);
+                    vector_remove(&vec, 0, &removed);
+                    assert_person(&removed, "Matias", 24);
+                    person_destroy(&removed);
+                }
+
+                assert_person_at_position(&vec, 0, "Gaston", 25);
+                should_int(vector_size(&vec)) be equal to(4);
+            } end
+
+            
             it("should remove and destroy a value at index")
             {
                 should_int(vector_size(&vec)) be equal to(5);
@@ -173,18 +190,37 @@ context (test_vector)
                 {
                     t_person* aux = vector_first(&vec);
                     assert_person(aux, "Matias", 24);
-                    vector_remove(&vec, 0);
+                    vector_remove(&vec, 0, NULL);
                 }
 
                 assert_person_at_position(&vec, 0, "Gaston", 25);
                 should_int(vector_size(&vec)) be equal to(4);
             } end
 
+            it ("should remove a range of indexes")
+            {
+                should_int(vector_size(&vec)) be equal to (5);
+
+                {
+                    t_person removed[2];
+                    vector_remove_range(&vec, 1, 3, &removed);
+                    assert_person(&removed[0], "Gaston"   , 25);
+                    assert_person(&removed[1], "Sebastian", 21);
+                    person_destroy(&removed[0]);
+                    person_destroy(&removed[1]);
+                }
+
+                should_int(vector_size(&vec)) be equal to (3);
+                assert_person_at_position(&vec, 0, "Matias"  , 24);
+                assert_person_at_position(&vec, 1, "Ezequiel", 25);
+                assert_person_at_position(&vec, 2, "Facundo" , 25);
+            } end
+
             it ("should remove and destroy a range of indices")
             {
                 should_int(vector_size(&vec)) be equal to (5);
 
-                vector_remove_range(&vec, 1, 3);
+                vector_remove_range(&vec, 1, 3, NULL);
 
                 should_int(vector_size(&vec)) be equal to (3);
                 assert_person_at_position(&vec, 0, "Matias"  , 24);
@@ -198,7 +234,25 @@ context (test_vector)
                 t_person* aux = vector_last(&vec);
                 assert_person(aux, "Facundo", 25);
 
-                vector_pop_last(&vec);
+                {
+                    t_person popped;
+                    vector_pop_last(&vec, &popped);
+                    assert_person(&popped, "Facundo", 25);
+                    person_destroy(&popped);
+                }
+
+                aux = vector_last(&vec);
+                assert_person(aux, "Ezequiel", 25);
+                should_int(vector_size(&vec)) be equal to (4);
+            } end
+
+            it ("should remove and destroy last element")
+            {
+                should_int(vector_size(&vec)) be equal to(5);
+                t_person* aux = vector_last(&vec);
+                assert_person(aux, "Facundo", 25);
+
+                vector_pop_last(&vec, NULL);
                 aux = vector_last(&vec);
 
                 assert_person(aux, "Ezequiel", 25);
@@ -214,7 +268,7 @@ context (test_vector)
                 {
                     if (string_equals_ignore_case(ps[i].name, "Gaston"))
                     {
-                        vector_remove(&vec, i);
+                        vector_remove(&vec, i, NULL);
                         break;
                     }
                 }
@@ -226,7 +280,7 @@ context (test_vector)
             {
                 should_int(vector_size(&vec)) be equal to(5);
                 vector_clean(&vec);
-                should_bool(vector_is_empty(&vec)) be truthy;
+                should_bool(vector_is_empty(&vec)) be truthy; 
             } end
         } end
 
