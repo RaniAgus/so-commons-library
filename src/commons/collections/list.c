@@ -18,10 +18,10 @@
 
 #include "list.h"
 
-static void list_link_element(t_list* self, t_link_element* previous, t_link_element* element, int index);
-static void list_unlink_element(t_list* self, t_link_element* previous,	t_link_element* element, int index);
+static void list_link_element(t_list* self, t_link_element** ref, t_link_element* element) ;
+static void list_unlink_element(t_list* self, t_link_element** ref);
 static t_link_element* list_create_element(void* data);
-static t_link_element* list_get_last_element(t_list* self);
+static t_link_element** list_get_last_element_ref(t_list* self);
 static t_link_element* list_find_element(t_list *self, bool(*cutting_condition)(t_link_element*, int));
 static int list_add_element(t_list* self, t_link_element* element, bool(*cutting_condition)(t_link_element*, int));
 static t_link_element* list_remove_element(t_list *self, bool(*cutting_condition)(t_link_element*, int));
@@ -235,7 +235,7 @@ t_list* list_map(t_list* self, void*(*transformer)(void*)){
 	t_list* mapped = list_create();
 
 	bool _transform_all(void* element_data, int index) {
-			return true;
+		return true;
 	}
 	list_append_to_sublist(mapped, self, _transform_all, transformer);
 
@@ -322,31 +322,31 @@ void* list_get_maximum(t_list* self, void* (*maximum)(void*, void*)) {
 }
 
 t_list_iterator* list_iterator_create(t_list* list) {
-	t_list_iterator* new = malloc(sizeof(t_list_iterator));
-	new->self = list;
-	new->prev = NULL;
-	new->element = NULL;
-	new->index = -1;
+	t_list_iterator* iterator = malloc(sizeof(t_list_iterator));
+	iterator->list = list;
+	iterator->prev = NULL;
+	iterator->ref = NULL;
+	iterator->index = -1;
 
-	return new;
+	return iterator;
 }
 
 bool list_iterator_has_next(t_list_iterator* iterator) {
-	return iterator->index < list_size(iterator->self) - 1;
+	return iterator->index + 1 < list_size(iterator->list);
 }
 
 void* list_iterator_next(t_list_iterator* iterator) {
-	iterator->prev = iterator->element;
-	iterator->element = iterator->index == -1 ? iterator->self->head : iterator->prev->next;
+	iterator->prev = iterator->ref;
+	iterator->ref = iterator->ref ? &(*iterator->ref)->next : &iterator->list->head;
 	iterator->index++;
-
-	return iterator->element->data;
+	return (*iterator->ref)->data;
 }
 
 void list_iterator_remove(t_list_iterator* iterator) {
-	list_unlink_element(iterator->self, iterator->prev, iterator->element, iterator->index);
-	free(iterator->element);
-	iterator->element = iterator->prev;
+	t_link_element* element = *iterator->ref;
+	list_unlink_element(iterator->list, iterator->ref);
+	free(element);
+	iterator->ref = iterator->prev;
 	iterator->prev = NULL;
 	iterator->index--;
 }
@@ -357,27 +357,15 @@ void list_iterator_destroy(t_list_iterator* iterator) {
 
 /********* PRIVATE FUNCTIONS **************/
 
-static void list_link_element(t_list* self, t_link_element* previous, t_link_element* element, int index) {
-	if (index == 0) {
-		element->next = self->head;
-		self->head = element;
-	} else {
-		element->next = previous->next;
-		previous->next = element;
-	}
+static void list_link_element(t_list* self, t_link_element** ref, t_link_element* element) {
+	element->next = (*ref);
+	(*ref) = element;
 	self->elements_count++;
 }
 
-static void list_unlink_element(t_list* self, t_link_element* previous,	t_link_element* element, int index) {
-	if (element != NULL) {
-		if (index == 0) {
-			self->head = element->next;
-		} else {
-			previous->next = element->next;
-		}
-		element->next = NULL;
-		self->elements_count--;
-	}
+static void list_unlink_element(t_list* self, t_link_element** ref) {
+	(*ref) = (*ref)->next;
+	self->elements_count--;
 }
 
 static t_link_element* list_create_element(void* data) {
@@ -387,10 +375,10 @@ static t_link_element* list_create_element(void* data) {
 	return element;
 }
 
-static t_link_element* list_get_last_element(t_list* self) {
-	t_link_element* last = self->head;
-	while(last != NULL && last->next != NULL)
-		last = last->next;
+static t_link_element** list_get_last_element_ref(t_list* self) {
+	t_link_element** last = &self->head;
+	while(*last != NULL)
+		last = &(*last)->next;
 
 	return last;
 }
@@ -408,48 +396,46 @@ static t_link_element* list_find_element(t_list *self, bool(*cutting_condition)(
 }
 
 static int list_add_element(t_list* self, t_link_element* element, bool(*cutting_condition)(t_link_element*, int)) {
-	t_link_element *previous = NULL;
-	t_link_element *aux = self->head;
+	t_link_element **ref = &self->head;
 	int index = 0;
 
-	while(!cutting_condition(aux, index)) {
-		previous = aux;
-		aux = aux->next;
+	while(!cutting_condition(*ref, index)) {
+		ref = &(*ref)->next;
 		index++;
 	}
-	list_link_element(self, previous, element, index);
+	list_link_element(self, ref, element);
 
 	return index;
 }
 
 static t_link_element* list_remove_element(t_list *self, bool(*cutting_condition)(t_link_element*, int)) {
-	t_link_element *previous = NULL;
-	t_link_element *element = self->head;
+	t_link_element **ref = &self->head;
+	t_link_element *element;
 	int index = 0;
 
-	while(!cutting_condition(element, index)) {
-		previous = element;
-		element = element->next;
+	while(!cutting_condition(*ref, index)) {
+		ref = &(*ref)->next;
 		index++;
 	}
-	list_unlink_element(self, previous, element, index);
+	element = (*ref);
+	list_unlink_element(self, ref);
 
 	return element;
 }
 
 static void list_append_to_sublist(t_list* sublist, t_list *self, bool(*condition)(void*, int), void* (*transformer)(void*)) {
-	t_link_element* last_element = list_get_last_element(sublist);
-	t_link_element* aux = self->head;
+	t_link_element** last_ref = list_get_last_element_ref(sublist);
+	t_link_element** ref = &self->head;
 	int index = 0;
 
-	while(aux != NULL) {
-		if(condition(aux->data, index)) {
-			t_link_element* new_element = list_create_element( transformer ? transformer(aux->data) : aux->data );
-			list_link_element(sublist, last_element, new_element, sublist->elements_count);
-			last_element = new_element;
+	while(*ref != NULL) {
+		if(condition((*ref)->data, index)) {
+			t_link_element* new_element = list_create_element( transformer ? transformer((*ref)->data) : (*ref)->data );
+			list_link_element(sublist, last_ref, new_element);
+			last_ref = &new_element->next;
 		}
 		index++;
-		aux = aux->next;
+		ref = &(*ref)->next;
 	}
 }
 
