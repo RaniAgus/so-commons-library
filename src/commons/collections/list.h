@@ -27,9 +27,8 @@
 
 	typedef struct {
 		t_list *list;
-		t_link_element **prev;
-		t_link_element **ref;
 		int index;
+		t_link_element **refs[];
 	} t_list_iterator;
 
 	/**

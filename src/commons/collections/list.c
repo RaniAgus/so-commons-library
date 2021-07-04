@@ -321,33 +321,29 @@ void* list_get_maximum(t_list* self, void* (*maximum)(void*, void*)) {
 }
 
 t_list_iterator* list_iterator_create(t_list* list) {
-	t_list_iterator* iterator = malloc(sizeof(t_list_iterator));
+	t_list_iterator* iterator = malloc(sizeof(t_list_iterator) + (list_size(list) + 1) * sizeof(t_link_element*));
 	iterator->list = list;
-	iterator->prev = NULL;
-	iterator->ref = NULL;
 	iterator->index = -1;
+	iterator->refs[0] = &list->head;
 
 	return iterator;
 }
 
 bool list_iterator_has_next(t_list_iterator* iterator) {
-	return iterator->index + 1 < list_size(iterator->list);
+	return *(iterator->refs[iterator->index + 1]) != NULL;
 }
 
 void* list_iterator_next(t_list_iterator* iterator) {
-	iterator->prev = iterator->ref;
-	iterator->ref = iterator->ref ? &(*iterator->ref)->next : &iterator->list->head;
 	iterator->index++;
-	return (*iterator->ref)->data;
+	iterator->refs[iterator->index + 1] = &(*iterator->refs[iterator->index])->next;
+	return (*iterator->refs[iterator->index])->data;
 }
 
 void list_iterator_remove(t_list_iterator* iterator) {
-	t_link_element* element = *iterator->ref;
-	list_unlink_element(iterator->list, iterator->ref);
-	free(element);
-	iterator->ref = iterator->prev;
-	iterator->prev = NULL;
+	t_link_element* element = *iterator->refs[iterator->index];
+	list_unlink_element(iterator->list, iterator->refs[iterator->index]);
 	iterator->index--;
+	free(element);
 }
 
 void list_iterator_destroy(t_list_iterator* iterator) {
