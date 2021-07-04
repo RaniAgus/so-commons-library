@@ -198,24 +198,17 @@ t_list* list_take(t_list* self, int count) {
 
 t_list* list_take_and_remove(t_list* self, int count) {
 	t_list* sublist = list_create();
-	if(count > 0) {
-		sublist->head = self->head;
-		if(count < self->elements_count) {
-			t_link_element* last = self->head;
-			for(int i = 0; i < count - 1; i++) {
-				last = last->next;
-			}
-
-			self->head = last->next;
-			last->next = NULL;
-			sublist->elements_count = count;
-			self->elements_count -= count;
-		} else {
-			self->head = NULL;
-			sublist->elements_count = self->elements_count;
-			self->elements_count = 0;
-		}
+	sublist->head = self->head;
+	t_link_element** last = &sublist->head;
+	
+	for(int i = 0; i < count && (*last) != NULL; i++) {
+		last = &(*last)->next;
+		sublist->elements_count++;
+		self->elements_count--;
 	}
+	self->head = (*last);
+	(*last) = NULL;
+
 	return sublist;
 }
 

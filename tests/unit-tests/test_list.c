@@ -299,6 +299,20 @@ context (test_list) {
                 list_destroy(sublist);
             } end
 
+            it("should return a new list with all elements of a list if its size is less than \"N\"") {
+                t_list* sublist = list_take(list, 7);
+                should_int(list_size(list)) be equal to(5);
+                should_int(list_size(sublist)) be equal to(5);
+
+                assert_person_in_list(sublist, 0, "Matias"   , 24);
+                assert_person_in_list(sublist, 1, "Gaston"   , 25);
+                assert_person_in_list(sublist, 2, "Sebastian", 21);
+                assert_person_in_list(sublist, 3, "Ezequiel" , 25);
+                assert_person_in_list(sublist, 4, "Facundo"  , 25);
+
+                list_destroy(sublist);
+            } end
+
             it("should return a new list with the first \"N\" elements of a list and remove them from original list") {
                 t_list* sublist = list_take_and_remove(list, 3);
                 should_int(list_size(list)) be equal to(2);
@@ -307,6 +321,20 @@ context (test_list) {
                 assert_person_in_list(sublist, 0, "Matias"   , 24);
                 assert_person_in_list(sublist, 1, "Gaston"   , 25);
                 assert_person_in_list(sublist, 2, "Sebastian", 21);
+
+                list_destroy_and_destroy_elements(sublist, (void*)persona_destroy);
+            } end
+
+            it("should return a new list with all elements of a list and leave it empty if its size is less than \"N\"") {
+                t_list* sublist = list_take_and_remove(list, 7);
+                should_int(list_size(list)) be equal to(0);
+                should_int(list_size(sublist)) be equal to(5);
+
+                assert_person_in_list(sublist, 0, "Matias"   , 24);
+                assert_person_in_list(sublist, 1, "Gaston"   , 25);
+                assert_person_in_list(sublist, 2, "Sebastian", 21);
+                assert_person_in_list(sublist, 3, "Ezequiel" , 25);
+                assert_person_in_list(sublist, 4, "Facundo"  , 25);
 
                 list_destroy_and_destroy_elements(sublist, (void*)persona_destroy);
             } end
