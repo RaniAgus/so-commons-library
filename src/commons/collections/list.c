@@ -245,24 +245,20 @@ int list_add_sorted(t_list *self, void* data, bool (*comparator)(void*,void*)) {
 
 void list_sort(t_list *self, bool (*comparator)(void *, void *)) {
 	if(self->elements_count > 1) {
-		t_list* sorted = list_create();
-		t_link_element* removed = NULL;
+		t_list sorted = (t_list) { .head = NULL, .elements_count = 0 };
 
 		while(self->elements_count > 0) {
-			bool _remove_first_element(t_link_element* element, int _) {
-				return element != NULL;
-			}
-			removed = list_remove_element(self,_remove_first_element);
+			t_link_element* removed = self->head;
+			list_unlink_element(self, &self->head);
 
 			bool _insert_element_sorted(t_link_element* element, int _) {
 				return element == NULL || !comparator(element->data, removed->data);
 			}
-			list_add_element(sorted, removed, _insert_element_sorted);
+			list_add_element(&sorted, removed, _insert_element_sorted);
 		}
 
-		self->head = sorted->head;
-		self->elements_count = sorted->elements_count;
-		free(sorted);
+		self->head = sorted.head;
+		self->elements_count = sorted.elements_count;
 	}
 }
 
