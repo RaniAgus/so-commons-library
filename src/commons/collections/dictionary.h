@@ -36,6 +36,17 @@
 	t_dictionary *dictionary_create();
 
 	/**
+	* @NAME: dictionary_parse
+	* @DESC: Crea un diccionario en base a un string con el siguiente formato: 
+	* "key1=data1\nkey2=data2\n...\nkeyN=dataN".
+	* [Warning] - Las líneas vacías ("\n\n") y las que empiezan con '#' son ignoradas.
+	* 
+	* La función que se pasa por parámetro devuelve un elemento parseado a partir del string recibido.
+	* [Warning] - La memoria ocupada por el string recibido es posteriormente liberada.
+	*/
+	t_dictionary *dictionary_parse(char* buffer, void* (*data_parser)(char*));
+
+	/**
 	* @NAME: dictionary_put
 	* @DESC: Inserta un nuevo par (key->data) al diccionario, en caso de ya existir la key actualiza la data.
 	* [Warning] - Tener en cuenta que esto no va a liberar la memoria del `data` original.
