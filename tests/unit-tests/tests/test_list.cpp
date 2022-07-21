@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../src/utils.h"
+#include "asserts.h"
 
 void _assert_person_has_name(t_person *p, const char *expected) {
     REQUIRE_NON_NULL(p);

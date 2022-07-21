@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../src/utils.h"
+#include "asserts.h"
 
 /**
  * TODO: This tests are 8-BIT dependant. We should think of a way to abstract them.

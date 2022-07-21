@@ -14,15 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../src/utils.h"
-
-void _assert_equals_array(char **expected, char **actual, int size) {
-    int i;
-    for (i = 0; i < size; i++) {
-        REQUIRE_STRING(actual[i], expected[i]);
-    }
-    REQUIRE_NULL(actual[i]);
-}
+#include "asserts.h"
 
 TEST_SUITE("Config") {
     TEST_CASE("Inexistent file") {
@@ -71,7 +63,7 @@ TEST_SUITE("Config") {
                 char **empty_array = config_get_array_value(config, "EMPTY_ARRAY");
 
                 char *empty_array_expected[] = {NULL};
-                _assert_equals_array(empty_array_expected, empty_array, 0);
+                REQUIRE_STRING_ARRAY(empty_array_expected, empty_array, 0);
 
                 string_array_destroy(empty_array);
             }
@@ -81,7 +73,7 @@ TEST_SUITE("Config") {
                 REQUIRE_STRING(config_get_string_value(config, "NUMBERS"), "[1, 2, 3, 4, 5]");
 
                 char **numbers = config_get_array_value(config, "NUMBERS");
-                _assert_equals_array(numbers_expected, numbers, 5);
+                REQUIRE_STRING_ARRAY(numbers_expected, numbers, 5);
 
                 string_array_destroy(numbers);
             }
@@ -91,7 +83,7 @@ TEST_SUITE("Config") {
                 REQUIRE_STRING(config_get_string_value(config, "NO_SPACES"), "[One,String,Next,to,another]");
 
                 char **strings = config_get_array_value(config, "NO_SPACES");
-                _assert_equals_array(strings_expected, strings, 5);
+                REQUIRE_STRING_ARRAY(strings_expected, strings, 5);
 
                 string_array_destroy(strings);
             }

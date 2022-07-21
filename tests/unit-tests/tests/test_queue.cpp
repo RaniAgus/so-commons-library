@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../src/utils.h"
+#include "asserts.h"
 
 void pop_assert_and_destroy(t_queue *queue, char *name, int age) {
     t_person *aux = (t_person *) queue_pop(queue);

@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../src/utils.h"
+#include "asserts.h"
 
 void _assert_key(char *got, const char *expected) {
     REQUIRE_NON_NULL(got);

@@ -14,7 +14,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../src/utils.h"
+#include "asserts.h"
 
 void _assert_names(char *name, const char *expected) {
     REQUIRE_NON_NULL(name);
@@ -174,167 +174,113 @@ TEST_SUITE("String") {
     }
 
     TEST_CASE("Split") {
+        char **substrings;
+
         SUBCASE("split_with_separators") {
             char *line = "path//to//file";
-            char **substrings = string_split(line, "//");
+            substrings = string_split(line, "//");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "path");
-            REQUIRE_STRING(substrings[1], "to");
-            REQUIRE_STRING(substrings[2], "file");
-            REQUIRE_NULL(substrings[3]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "path", "to", "file", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 3);
         }
 
         SUBCASE("split_with_empty_string_as_separator") {
             char *line = "hello";
-            char **substrings = string_split(line, "");
+            substrings = string_split(line, "");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "h");
-            REQUIRE_STRING(substrings[1], "e");
-            REQUIRE_STRING(substrings[2], "l");
-            REQUIRE_STRING(substrings[3], "l");
-            REQUIRE_STRING(substrings[4], "o");
-            REQUIRE_NULL(substrings[5]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "h", "e", "l", "l", "o", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 5);
         }
 
         SUBCASE("split_with_null_separator") {
             char *line = "path/to/file";
-            char **substrings = string_split(line, NULL);
+            substrings = string_split(line, NULL);
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "path/to/file");
-            REQUIRE_NULL(substrings[1]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "path/to/file", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 1);
         }
 
         SUBCASE("split_starting_with_separator") {
             char *line = "/path/to/file";
-            char **substrings = string_split(line, "/");
+            substrings = string_split(line, "/");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "");
-            REQUIRE_STRING(substrings[1], "path");
-            REQUIRE_STRING(substrings[2], "to");
-            REQUIRE_STRING(substrings[3], "file");
-            REQUIRE_NULL(substrings[4]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "", "path", "to", "file", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 4);
         }
 
         SUBCASE("split_ending_with_separator") {
             char *line = "path/to/file/";
-            char **substrings = string_split(line, "/");
+            substrings = string_split(line, "/");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "path");
-            REQUIRE_STRING(substrings[1], "to");
-            REQUIRE_STRING(substrings[2], "file");
-            REQUIRE_STRING(substrings[3], "");
-            REQUIRE_NULL(substrings[4]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "path", "to", "file", "", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 4);
         }
 
         SUBCASE("split_having_separators_in_between") {
             char *line = "path/to//file";
-            char **substrings = string_split(line, "/");
+            substrings = string_split(line, "/");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "path");
-            REQUIRE_STRING(substrings[1], "to");
-            REQUIRE_STRING(substrings[2], "");
-            REQUIRE_STRING(substrings[3], "file");
-            REQUIRE_NULL(substrings[4]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "path", "to", "", "file", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 4);
         }
 
         SUBCASE("split_is_empty") {
             char *line = "";
-            char **substrings = string_split(line, "/");
+            substrings = string_split(line, "/");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "");
-            REQUIRE_NULL(substrings[1]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 1);
         }
 
         SUBCASE("split_is_empty_with_empty_separator") {
             char *line = "";
-            char **substrings = string_split(line, "");
+            substrings = string_split(line, "");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "");
-            REQUIRE_NULL(substrings[1]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 1);
         }
 
         SUBCASE("n_split_when_n_is_less_than_splitted_elements") {
             char *line = "Hola planeta tierra";
-            char **substrings = string_n_split(line, 2, " ");
+            substrings = string_n_split(line, 2, " ");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "Hola");
-            REQUIRE_STRING(substrings[1], "planeta tierra");
-            REQUIRE_NULL(substrings[2]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "Hola", "planeta tierra", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 2);
         }
 
         SUBCASE("n_split_when_n_is_equals_than_splitted_elements") {
             char *line = "Hola planeta tierra";
-            char **substrings = string_n_split(line, 3, " ");
+            substrings = string_n_split(line, 3, " ");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "Hola");
-            REQUIRE_STRING(substrings[1], "planeta");
-            REQUIRE_STRING(substrings[2], "tierra");
-            REQUIRE_NULL(substrings[3]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "Hola", "planeta", "tierra", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 3);
         }
 
         SUBCASE("n_split_when_separator_isnt_included") {
             char *line = "Hola planeta tierra";
-            char **substrings = string_n_split(line, 5, ";");
+            substrings = string_n_split(line, 5, ";");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], line);
-            REQUIRE_NULL(substrings[1]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "Hola planeta tierra", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 1);
         }
 
-        SUBCASE("n_split_when_n_is_greather_than_splitted_elements") {
+        SUBCASE("n_split_when_n_is_greater_than_splitted_elements") {
             char *line = "Hola planeta tierra";
-            char **substrings = string_n_split(line, 10, " ");
+            substrings = string_n_split(line, 10, " ");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "Hola");
-            REQUIRE_STRING(substrings[1], "planeta");
-            REQUIRE_STRING(substrings[2], "tierra");
-            REQUIRE_NULL(substrings[3]);
-
-            string_array_destroy(substrings);
+            char *expected[] = { "Hola", "planeta", "tierra", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 3);
         }
 
         SUBCASE("n_split_is_empty") {
             char *line = "";
-            char **substrings = string_n_split(line, 10, ";");
+            substrings = string_n_split(line, 10, ";");
 
-            REQUIRE_NON_NULL(substrings);
-            REQUIRE_STRING(substrings[0], "");
-
-            string_array_destroy(substrings);
+            char *expected[] = { "", NULL };
+            REQUIRE_STRING_ARRAY(substrings, expected, 1);
         }
+
+        string_array_destroy(substrings);
     }
 
     TEST_CASE("starts_with") {
@@ -510,10 +456,9 @@ TEST_SUITE("String") {
             string_array_push(&names, "Agustin");
 
             REQUIRE_EQ(string_array_size(names), 5);
-            REQUIRE_NULL(names[5]);
 
-            const char *expected[] = {"Gaston", "Matias", "Sebastian", "Daniela", "Agustin"};
-            iterate_a_string_array(names, expected, _assert_names);
+            const char *expected[] = {"Gaston", "Matias", "Sebastian", "Daniela", "Agustin", NULL};
+            REQUIRE_STRING_ARRAY(names, expected, 5);
         }
 
         SUBCASE("remove the last element") {
@@ -522,10 +467,9 @@ TEST_SUITE("String") {
             REQUIRE_STRING(name, "Daniela");
 
             REQUIRE_EQ(string_array_size(names), 3);
-            REQUIRE_NULL(names[3]);
 
-            const char *expected[] = {"Gaston", "Matias", "Sebastian"};
-            iterate_a_string_array(names, expected, _assert_names);
+            const char *expected[] = {"Gaston", "Matias", "Sebastian", NULL};
+            REQUIRE_STRING_ARRAY(names, expected, 3);
         }
 
         SUBCASE("replace an element") {
@@ -533,8 +477,8 @@ TEST_SUITE("String") {
 
             REQUIRE_STRING(name, "Sebastian");
 
-            const char *expected[] = {"Gaston", "Matias", "Damian", "Daniela"};
-            iterate_a_string_array(names, expected, _assert_names);
+            const char *expected[] = {"Gaston", "Matias", "Damian", "Daniela", NULL};
+            REQUIRE_STRING_ARRAY(names, expected, 4);
         }
 
         free(names);
