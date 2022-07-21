@@ -12,3 +12,4 @@ build
 test_save_config.cfg
 **/.idea/
 **/cmake-build*/
+**/.vscode/
