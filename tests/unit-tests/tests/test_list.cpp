@@ -33,7 +33,7 @@ t_list *_generate_sorted_list(t_list *list) {
 t_list *_verify_a_sort_without_duplicates(t_list *(*sorted_list_generator)(t_list *list), t_list *list) {
     t_list *a_sorted_list = sorted_list_generator(list);
 
-    REQUIRE(list_size(a_sorted_list) == 4);
+    REQUIRE_EQ(list_size(a_sorted_list), 4);
     REQUIRE_PERSON_IN_LIST(a_sorted_list, 0, "Daniela", 19);
     REQUIRE_PERSON_IN_LIST(a_sorted_list, 1, "Sebastian", 21);
     REQUIRE_PERSON_IN_LIST(a_sorted_list, 2, "Matias", 24);
@@ -47,7 +47,7 @@ t_list *_verify_a_sort_with_duplicates(t_list *(*sorted_list_generator)(t_list *
 
     t_list *a_sorted_list = sorted_list_generator(list);
 
-    REQUIRE(list_size(a_sorted_list) == 5);
+    REQUIRE_EQ(list_size(a_sorted_list), 5);
     REQUIRE_PERSON_IN_LIST(a_sorted_list, 0, "Daniela", 19);
     REQUIRE_PERSON_IN_LIST(a_sorted_list, 1, "Sebastian", 21);
     REQUIRE_PERSON_IN_LIST(a_sorted_list, 2, "Matias", 24);
@@ -70,13 +70,13 @@ TEST_SUITE("List") {
             list_add(list, persona_create("Gaston", 25));
             REQUIRE_PERSON_IN_LIST(list, 1, "Gaston", 25);
 
-            REQUIRE(list_size(list) == 2);
+            REQUIRE_EQ(list_size(list), 2);
         }
 
         SUBCASE("should add a value at index") {
             list_add(list, persona_create("Matias", 24));
             REQUIRE_PERSON_IN_LIST(list, 0, "Matias", 24);
-            REQUIRE(list_size(list) == 1);
+            REQUIRE_EQ(list_size(list), 1);
 
             list_add_in_index(list, 0, persona_create("Gaston", 25));
             REQUIRE_PERSON_IN_LIST(list, 0, "Gaston", 25);
@@ -88,11 +88,11 @@ TEST_SUITE("List") {
             list_add(list, persona_create("Matias", 24));
             list_add(list, persona_create("Gaston", 25));
 
-            REQUIRE(list_size(list) == 3);
+            REQUIRE_EQ(list_size(list), 3);
             list_add_sorted(list, persona_create("Daniela", 19), (bool (*)(void *, void *)) ayudantes_menor);
             list_add_sorted(list, persona_create("Agustin", 26), (bool (*)(void *, void *)) ayudantes_menor);
             list_add_sorted(list, persona_create("Ezequiel", 25), (bool (*)(void *, void *)) ayudantes_menor);
-            REQUIRE(list_size(list) == 6);
+            REQUIRE_EQ(list_size(list), 6);
 
             REQUIRE_PERSON_IN_LIST(list, 0, "Daniela", 19);
             REQUIRE_PERSON_IN_LIST(list, 1, "Sebastian", 21);
@@ -111,9 +111,9 @@ TEST_SUITE("List") {
             list_add(other, persona_create("Daniela", 19));
             list_add(other, persona_create("Facundo", 25));
 
-            REQUIRE(list_size(list) == 3);
+            REQUIRE_EQ(list_size(list), 3);
             list_add_all(list, other);
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_EQ(list_size(list), 5);
 
             REQUIRE_PERSON_IN_LIST(list, 0, "Matias", 24);
             REQUIRE_PERSON_IN_LIST(list, 1, "Gaston", 25);
@@ -135,7 +135,7 @@ TEST_SUITE("List") {
             list_add(list, persona_create("Diana", 22));
 
             t_list *duplicated = list_duplicate(list);
-            REQUIRE(list_size(duplicated) == 2);
+            REQUIRE_EQ(list_size(duplicated), 2);
 
             REQUIRE(duplicated != list);
             REQUIRE_PERSON_IN_LIST(duplicated, 0, "Juan", 22);
@@ -167,34 +167,34 @@ TEST_SUITE("List") {
         }
 
         SUBCASE("should remove a value at index") {
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_EQ(list_size(list), 5);
 
             t_person *aux = (t_person *) list_remove(list, 0);
             REQUIRE_PERSON(aux, "Matias", 25);
             persona_destroy(aux);
 
             REQUIRE_PERSON_IN_LIST(list, 0, "Gaston", 24);
-            REQUIRE(list_size(list) == 4);
+            REQUIRE_EQ(list_size(list), 4);
         }
 
         SUBCASE("should remove and destroy a value at index") {
             REQUIRE_PERSON_IN_LIST(list, 0, "Matias", 25);
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_EQ(list_size(list), 5);
 
             list_remove_and_destroy_element(list, 0, (void (*)(void *)) persona_destroy);
 
             REQUIRE_PERSON_IN_LIST(list, 0, "Gaston", 24);
-            REQUIRE(list_size(list) == 4);
+            REQUIRE_EQ(list_size(list), 4);
         }
 
         SUBCASE("should remove the first value that satisfies a condition") {
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_EQ(list_size(list), 5);
 
             t_person *aux = (t_person *) list_remove_by_condition(list, (bool (*)(void *)) is_gaston);
             REQUIRE_PERSON(aux, "Gaston", 24);
             persona_destroy(aux);
 
-            REQUIRE(list_size(list) == 4);
+            REQUIRE_EQ(list_size(list), 4);
         }
 
         SUBCASE("should remove all values which satisfy a condition") {
@@ -203,18 +203,18 @@ TEST_SUITE("List") {
             REQUIRE_PERSON_IN_LIST(list, 2, "Sebastian", 21);
             REQUIRE_PERSON_IN_LIST(list, 3, "Ezequiel", 25);
             REQUIRE_PERSON_IN_LIST(list, 4, "Facundo", 25);
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_EQ(list_size(list), 5);
 
             list_remove_and_destroy_all_by_condition(list, (bool (*)(void *)) is_25_years_old,
                                                      (void (*)(void *)) persona_destroy);
 
             REQUIRE_PERSON_IN_LIST(list, 0, "Gaston", 24);
             REQUIRE_PERSON_IN_LIST(list, 1, "Sebastian", 21);
-            REQUIRE(list_size(list) == 2);
+            REQUIRE_EQ(list_size(list), 2);
         }
 
         SUBCASE("should clean a list and leave it empty") {
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_EQ(list_size(list), 5);
             list_clean_and_destroy_elements(list, (void (*)(void *)) persona_destroy);
             REQUIRE(list_is_empty(list));
         }
@@ -234,15 +234,15 @@ TEST_SUITE("List") {
         SUBCASE("should find the first value that satisfies a condition") {
             REQUIRE_PERSON(find_someone_by_name(list, "Ezequiel"), "Ezequiel", 25);
             REQUIRE_PERSON(find_someone_by_name(list, "Sebastian"), "Sebastian", 21);
-            REQUIRE(find_someone_by_name(list, "Chuck Norris") == NULL);
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_NULL(find_someone_by_name(list, "Chuck Norris"));
+            REQUIRE_EQ(list_size(list), 5);
         }
 
         SUBCASE("should filter a list with the values that satisfies a condition") {
-            REQUIRE(list_size(list) == 5);
+            REQUIRE_EQ(list_size(list), 5);
 
             t_list *filtered = list_filter(list, (bool (*)(void *)) is_young);
-            REQUIRE(list_size(filtered) == 2);
+            REQUIRE_EQ(list_size(filtered), 2);
             REQUIRE_PERSON_IN_LIST(filtered, 0, "Matias", 24);
             REQUIRE_PERSON_IN_LIST(filtered, 1, "Sebastian", 21);
             list_destroy(filtered);
@@ -272,8 +272,8 @@ TEST_SUITE("List") {
 
         SUBCASE("should return a new list with the first \"N\" elements of a list") {
             t_list *sublist = list_take(list, 3);
-            REQUIRE(list_size(list) == 5);
-            REQUIRE(list_size(sublist) == 3);
+            REQUIRE_EQ(list_size(list), 5);
+            REQUIRE_EQ(list_size(sublist), 3);
 
             REQUIRE_PERSON_IN_LIST(sublist, 0, "Matias", 24);
             REQUIRE_PERSON_IN_LIST(sublist, 1, "Gaston", 25);
@@ -284,8 +284,8 @@ TEST_SUITE("List") {
 
         SUBCASE("should return a new list with the first \"N\" elements starting at a given index of a list") {
             t_list *sublist = list_slice(list, 1, 3);
-            REQUIRE(list_size(list) == 5);
-            REQUIRE(list_size(sublist) == 3);
+            REQUIRE_EQ(list_size(list), 5);
+            REQUIRE_EQ(list_size(sublist), 3);
 
             REQUIRE_PERSON_IN_LIST(sublist, 0, "Gaston", 25);
             REQUIRE_PERSON_IN_LIST(sublist, 1, "Sebastian", 21);
@@ -296,8 +296,8 @@ TEST_SUITE("List") {
 
         SUBCASE("should return a new list with the first \"N\" elements of a list and remove them from original list") {
             t_list *sublist = list_take_and_remove(list, 3);
-            REQUIRE(list_size(list) == 2);
-            REQUIRE(list_size(sublist) == 3);
+            REQUIRE_EQ(list_size(list), 2);
+            REQUIRE_EQ(list_size(sublist), 3);
 
             REQUIRE_PERSON_IN_LIST(sublist, 0, "Matias", 24);
             REQUIRE_PERSON_IN_LIST(sublist, 1, "Gaston", 25);
@@ -308,8 +308,8 @@ TEST_SUITE("List") {
 
         SUBCASE("should return a new list with the first \"N\" elements starting at a given index and remove them from the original list") {
             t_list *sublist = list_slice_and_remove(list, 1, 3);
-            REQUIRE(list_size(list) == 2);
-            REQUIRE(list_size(sublist) == 3);
+            REQUIRE_EQ(list_size(list), 2);
+            REQUIRE_EQ(list_size(sublist), 3);
 
             REQUIRE_PERSON_IN_LIST(sublist, 0, "Gaston", 25);
             REQUIRE_PERSON_IN_LIST(sublist, 1, "Sebastian", 21);
@@ -320,8 +320,8 @@ TEST_SUITE("List") {
 
         SUBCASE("should return a new list with the remaining elements starting at a given index and remove them from the original list when \"N\" is too big") {
             t_list *sublist = list_slice_and_remove(list, 2, 10);
-            REQUIRE(list_size(list) == 2);
-            REQUIRE(list_size(sublist) == 3);
+            REQUIRE_EQ(list_size(list), 2);
+            REQUIRE_EQ(list_size(sublist), 3);
 
             REQUIRE_PERSON_IN_LIST(sublist, 0, "Sebastian", 21);
             REQUIRE_PERSON_IN_LIST(sublist, 1, "Ezequiel", 25);
@@ -387,7 +387,7 @@ TEST_SUITE("List") {
 
         SUBCASE("Count") {
             SUBCASE("should count the values that satisfies a condition") {
-                REQUIRE(list_count_satisfying(list, (bool (*)(void *)) is_young) == 3);
+                REQUIRE_EQ(list_count_satisfying(list, (bool (*)(void *)) is_young), 3);
             }
         }
 
@@ -442,7 +442,7 @@ TEST_SUITE("List") {
             const char *names_array[] = {"Matias", "Gaston", "Sebastian", "Daniela"};
 
             int index = iterate_a_list(list, names_array, _assert_person_has_name);
-            REQUIRE(index == 4);
+            REQUIRE_EQ(index, 4);
         }
 
         list_destroy_and_destroy_elements(list, (void (*)(void *)) persona_destroy);
@@ -498,14 +498,14 @@ TEST_SUITE("List") {
             t_person *oldestPerson = (t_person *) list_fold(list, seedPerson,
                                                             (void *(*)(void *, void *)) ayudantes_maximo_edad);
 
-            REQUIRE(oldestPerson->age == 150);
+            REQUIRE_EQ(oldestPerson->age, 150);
 
             persona_destroy(seedPerson);
         }
 
         SUBCASE("should fold all values using a intial value with different type") {
             intptr_t sum = (intptr_t) list_fold(list, (void *) 0, (void *(*)(void *, void *)) add_age);
-            REQUIRE(sum == 273);
+            REQUIRE_EQ(sum, 273);
         }
 
         list_destroy_and_destroy_elements(list, (void (*)(void *)) persona_destroy);
@@ -559,7 +559,7 @@ TEST_SUITE("List") {
                 REQUIRE_STRING(person->name, names[list_iterator->index]);
             }
             list_iterator_destroy(list_iterator);
-            REQUIRE(list->elements_count == 5);
+            REQUIRE_EQ(list->elements_count, 5);
             REQUIRE_PERSON_IN_LIST(list, 0, "Nicolas", 6);
             REQUIRE_PERSON_IN_LIST(list, 1, "Matias", 70);
             REQUIRE_PERSON_IN_LIST(list, 2, "Sebastian", 8);

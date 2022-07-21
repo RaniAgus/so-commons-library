@@ -28,9 +28,9 @@ TEST_SUITE("Bitarray") {
             char data[] = {(char) 0b10000000, 0, 0b00000001};
             bitarray = bitarray_create_with_mode(data, sizeof(data), LSB_FIRST);
 
-            REQUIRE(bitarray_test_bit(bitarray, 7) == true);
-            REQUIRE(bitarray_test_bit(bitarray, 1) == false);
-            REQUIRE(bitarray_test_bit(bitarray, 8 + 8 + 0) == true);
+            REQUIRE(bitarray_test_bit(bitarray, 7));
+            REQUIRE_FALSE(bitarray_test_bit(bitarray, 1));
+            REQUIRE(bitarray_test_bit(bitarray, 8 + 8 + 0));
         }
 
         SUBCASE("should clean the bit value at position") {
@@ -40,7 +40,7 @@ TEST_SUITE("Bitarray") {
 
             bitarray_clean_bit(bitarray, 8 + 8 + 0);
 
-            REQUIRE(memcmp(BASE_ARRAY, data, sizeof(data)) == 0);
+            REQUIRE_EQ(memcmp(BASE_ARRAY, data, sizeof(data)), 0);
         }
 
         SUBCASE("should set the bit value at position") {
@@ -50,14 +50,14 @@ TEST_SUITE("Bitarray") {
 
             bitarray_set_bit(bitarray, 7);
 
-            REQUIRE(memcmp(BASE_ARRAY, data, sizeof(data)) == 0);
+            REQUIRE_EQ(memcmp(BASE_ARRAY, data, sizeof(data)), 0);
         }
 
         SUBCASE("should get the bits count") {
             char data[] = {0, 0, 0};
             bitarray = bitarray_create_with_mode(data, sizeof(data), LSB_FIRST);
 
-            REQUIRE(bitarray_get_max_bit(bitarray) == (8 * 3));
+            REQUIRE_EQ(bitarray_get_max_bit(bitarray), 8 * 3);
         }
 
         bitarray_destroy(bitarray);
@@ -70,9 +70,9 @@ TEST_SUITE("Bitarray") {
             char data[] = {(char) 0b10000000, 0, (char) 0b10000000};
             bitarray = bitarray_create_with_mode(data, sizeof(data), MSB_FIRST);
 
-            REQUIRE(bitarray_test_bit(bitarray, 0) == true);
-            REQUIRE(bitarray_test_bit(bitarray, 7) == false);
-            REQUIRE(bitarray_test_bit(bitarray, 8 + 8 + 0) == true);
+            REQUIRE(bitarray_test_bit(bitarray, 0));
+            REQUIRE_FALSE(bitarray_test_bit(bitarray, 7));
+            REQUIRE(bitarray_test_bit(bitarray, 8 + 8 + 0));
         }
 
         SUBCASE("should clean the bit value at position") {
@@ -82,7 +82,7 @@ TEST_SUITE("Bitarray") {
 
             bitarray_clean_bit(bitarray, 8 + 8 + 0);
 
-            REQUIRE(memcmp(BASE_ARRAY, data, sizeof(data)) == 0);
+            REQUIRE_EQ(memcmp(BASE_ARRAY, data, sizeof(data)), 0);
         }
 
         SUBCASE("should set the bit value at position") {
@@ -92,14 +92,14 @@ TEST_SUITE("Bitarray") {
 
             bitarray_set_bit(bitarray, 0);
 
-            REQUIRE(memcmp(BASE_ARRAY, data, sizeof(data)) == 0);
+            REQUIRE_EQ(memcmp(BASE_ARRAY, data, sizeof(data)), 0);
         }
 
         SUBCASE("should get the bits count") {
             char data[] = {0, 0, 0};
             bitarray = bitarray_create_with_mode(data, sizeof(data), MSB_FIRST);
 
-            REQUIRE(bitarray_get_max_bit(bitarray) == (8 * 3));
+            REQUIRE_EQ(bitarray_get_max_bit(bitarray), 8 * 3);
         }
 
         bitarray_destroy(bitarray);
