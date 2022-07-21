@@ -1,53 +1,52 @@
-RM=rm -rf
-CPP=g++
 CC=gcc
+CXX=g++
 
-BASE_DIR=../..
-
-DOCTEST=/usr/local/include/doctest.h
-
-COMMONS=$(BASE_DIR)/src
+COMMONS=../../src
+COMMONS_SRCS=$(shell find $(COMMONS)/commons -iname "*.c" -or -iname "*.h")
 COMMONS_BIN=$(COMMONS)/build
 COMMONS_SO=$(COMMONS_BIN)/libcommons.so
-COMMONS_SRCS=$(patsubst ./%,$(COMMONS)/%,$(shell make --no-print-directory -C $(COMMONS) sources))
 
-C_SRCS=$(shell find src -iname "*.c")
-CPP_SRCS=$(shell find tests -iname "*.cpp")
-OBJS=$(C_SRCS:src/%.c=build/%.o) $(CPP_SRCS:tests/%.cpp=build/%.o)
+DOCTEST=lib/doctest.h
 
-BIN_DIR=build
-BIN=$(BIN_DIR)/commons-unit-test
+# main.cpp must go first
+SRCS=$(shell find tests -iname "main.cpp") $(shell find tests -iname "test_*.cpp") $(shell find tests -iname "*.c")
+DEPS=$(shell find tests -iname "*.h")
+OBJS=$(SRCS:%=build/%.o)
+DIRS=$(sort $(dir $(OBJS)))
+
+BIN=build/commons-unit-test
 
 all: $(BIN)
 
-$(BIN_DIR):
+$(BIN): $(OBJS)
+	$(CXX) -L"$(COMMONS_BIN)" -Wl,-rpath,"$(COMMONS_BIN)" -o "$@" $(OBJS) -lcommons
+
+build/%.cpp.o: %.cpp $(DEPS) $(COMMONS_SO) | $(DIRS) lib/doctest.h
+	$(CXX) -I"$(COMMONS)" -Ilib -c -Wno-write-strings -o "$@" "$<"
+
+build/%.c.o: %.c $(DEPS) $(COMMONS_SO) | $(DIRS) lib/doctest.h
+	$(CC) -I"$(COMMONS)" -Ilib -c -o "$@" "$<"
+
+lib/doctest.h: | lib
+	wget -qO- https://raw.githubusercontent.com/doctest/doctest/v2.4.9/doctest/doctest.h | tee $@ > /dev/null
+
+$(DIRS) lib:
 	mkdir -p $@
-
-$(BIN): $(DOCTEST) $(COMMONS_SO) $(BIN_DIR) $(OBJS)
-	$(CPP) -L"$(COMMONS_BIN)" -Wl,-rpath,"$(COMMONS_BIN)" -o "$@" src/main.cpp $(OBJS) -lcommons
-
-build/%.o: tests/%.cpp
-	$(CPP) -std=gnu++11 -I"$(COMMONS)" -c -Wno-write-strings -o "$@" "$<"
-
-build/%.o: src/%.c
-	$(CC) -I"$(COMMONS)" -c -fmessage-length=0 -fPIC -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
-
-debug: CC += -DDEBUG -g
-debug: all
-
-clean:
-	$(RM) build
-
-test: all
-	LD_LIBRARY_PATH="$(COMMONS_BIN)" ./$(BIN)
 
 $(COMMONS_SO): $(COMMONS_SRCS)
 	$(MAKE) -C $(COMMONS) all
 
-$(DOCTEST):
-	wget -qO- https://raw.githubusercontent.com/doctest/doctest/v2.4.9/doctest/doctest.h | sudo tee $@ > /dev/null
+debug: CC += -DDEBUG -g
+debug: CXX += -DDEBUG -g
+debug: all
+
+clean:
+	rm -rf build
+
+test: all
+	./$(BIN)
 
 valgrind: debug
-	LD_LIBRARY_PATH="$(COMMONS_BIN)/" valgrind --error-exitcode=42 --leak-check=full -v ./$(BIN)
+	valgrind --error-exitcode=42 --leak-check=full -v ./$(BIN)
 
 .PHONY: all debug clean test valgrind
