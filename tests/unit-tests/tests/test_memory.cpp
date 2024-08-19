@@ -28,7 +28,7 @@ TEST_SUITE("Memory") {
         SUBCASE("return a string with hexdump format") {
             char *result = mem_hexstring(memory, strlen(memory));
 
-            REQUIRE_STRING(result, dumped_format);
+            REQUIRE_EQ(result, dumped_format);
 
             free(result);
         }
@@ -50,7 +50,7 @@ TEST_SUITE("Memory") {
 
             char *result = mem_hexstring(stream, total_size);
 
-            REQUIRE_STRING(result, dumped_format);
+            REQUIRE_EQ(result, dumped_format);
 
             free(stream);
             free(result);

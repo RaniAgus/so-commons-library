@@ -43,25 +43,18 @@ extern "C" {
     REQUIRE_NE((intptr_t) actual, (intptr_t) NULL); \
 } while(0)
 
-#define REQUIRE_STRING(actual, expected) do { \
-    REQUIRE_NON_NULL(actual);                 \
-    std::string actual_str((char*) (actual)); \
-    std::string expected_str(expected);       \
-    REQUIRE_EQ(actual_str, expected_str);     \
-} while(0)
-
 #define REQUIRE_STRING_ARRAY(actual, expected, size) do { \
     REQUIRE_NON_NULL(actual);                             \
     int i;                                                \
     for (i = 0; i < size; i++) {                          \
-        REQUIRE_STRING(actual[i], expected[i]);           \
+        REQUIRE_EQ(actual[i], expected[i]);               \
     }                                                     \
     REQUIRE_NULL(actual[i]);                              \
 } while(0)
 
 #define REQUIRE_PERSON(actual, expected_name, expected_age) do {  \
     REQUIRE_NON_NULL(actual);                                     \
-    REQUIRE_STRING(((t_person*) (actual))->name, expected_name);  \
+    REQUIRE_EQ(((t_person*) (actual))->name, expected_name);      \
     REQUIRE_EQ(((t_person*) (actual))->age, expected_age);        \
 } while(0)
 

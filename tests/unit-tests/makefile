@@ -22,13 +22,13 @@ $(BIN): $(OBJS)
 	$(CXX) -L"$(COMMONS_BIN)" -Wl,-rpath,"$(COMMONS_BIN)" -o "$@" $(OBJS) -lcommons
 
 build/%.cpp.o: %.cpp $(DEPS) $(COMMONS_SO) | $(DIRS) lib/doctest.h
-	$(CXX) -I"$(COMMONS)" -Ilib -c -Wno-write-strings -o "$@" "$<"
+	$(CXX) -I"$(COMMONS)" -Ilib -c -Wno-write-strings -o "$@" "$<" -DDOCTEST_CONFIG_TREAT_CHAR_STAR_AS_STRING
 
 build/%.c.o: %.c $(DEPS) $(COMMONS_SO) | $(DIRS) lib/doctest.h
 	$(CC) -I"$(COMMONS)" -Ilib -c -o "$@" "$<"
 
 lib/doctest.h: | lib
-	wget -qO- https://raw.githubusercontent.com/doctest/doctest/v2.4.9/doctest/doctest.h | tee $@ > /dev/null
+	wget -qO- https://raw.githubusercontent.com/doctest/doctest/v2.4.11/doctest/doctest.h | tee $@ > /dev/null
 
 $(DIRS) lib:
 	mkdir -p $@

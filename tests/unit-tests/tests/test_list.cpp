@@ -18,7 +18,7 @@
 
 void _assert_person_has_name(t_person *p, const char *expected) {
     REQUIRE_NON_NULL(p);
-    REQUIRE_STRING(p->name, expected);
+    REQUIRE_EQ(p->name, expected);
 }
 
 t_list *_sort_actual_list(t_list *list) {
@@ -253,7 +253,7 @@ TEST_SUITE("List") {
             t_list *names = list_map(list, (void *(*)(void *)) get_name);
             int i;
             for (i = 0; i < 5; i++) {
-                REQUIRE_STRING(list_get(names, i), names_array[i]);
+                REQUIRE_EQ((char*) list_get(names, i), names_array[i]);
             }
             list_destroy(names);
         }
@@ -530,7 +530,7 @@ TEST_SUITE("List") {
             t_list_iterator *list_iterator = list_iterator_create(list);
             while (list_iterator_has_next(list_iterator)) {
                 t_person *person = (t_person *) list_iterator_next(list_iterator);
-                REQUIRE_STRING(person->name, names[list_iterator->index]);
+                REQUIRE_EQ(person->name, names[list_iterator->index]);
             }
             list_iterator_destroy(list_iterator);
         }
@@ -556,7 +556,7 @@ TEST_SUITE("List") {
                     persona_destroy(person);
                     continue;
                 }
-                REQUIRE_STRING(person->name, names[list_iterator->index]);
+                REQUIRE_EQ(person->name, names[list_iterator->index]);
             }
             list_iterator_destroy(list_iterator);
             REQUIRE_EQ(list->elements_count, 5);

@@ -47,11 +47,11 @@ TEST_SUITE("Config") {
             }
 
             SUBCASE("should get string value") {
-                REQUIRE_STRING(config_get_string_value(config, "IP"), "127.0.0.1");
+                REQUIRE_EQ(config_get_string_value(config, "IP"), "127.0.0.1");
             }
 
             SUBCASE("should get string value with equals sign in value") {
-                REQUIRE_STRING(config_get_string_value(config, "WITH_EQUALS"), "this=value");
+                REQUIRE_EQ(config_get_string_value(config, "WITH_EQUALS"), "this=value");
             }
 
             SUBCASE("should get double value") {
@@ -59,7 +59,7 @@ TEST_SUITE("Config") {
             }
 
             SUBCASE("should get an empty array value") {
-                REQUIRE_STRING(config_get_string_value(config, "EMPTY_ARRAY"), "[]");
+                REQUIRE_EQ(config_get_string_value(config, "EMPTY_ARRAY"), "[]");
                 char **empty_array = config_get_array_value(config, "EMPTY_ARRAY");
 
                 char *empty_array_expected[] = {NULL};
@@ -70,7 +70,7 @@ TEST_SUITE("Config") {
 
             SUBCASE("should get an array with values") {
                 char *numbers_expected[] = {"1", "2", "3", "4", "5", NULL};
-                REQUIRE_STRING(config_get_string_value(config, "NUMBERS"), "[1, 2, 3, 4, 5]");
+                REQUIRE_EQ(config_get_string_value(config, "NUMBERS"), "[1, 2, 3, 4, 5]");
 
                 char **numbers = config_get_array_value(config, "NUMBERS");
                 REQUIRE_STRING_ARRAY(numbers_expected, numbers, 5);
@@ -80,7 +80,7 @@ TEST_SUITE("Config") {
 
             SUBCASE("should get an array with values without spaces between entries") {
                 char *strings_expected[] = {"One", "String", "Next", "to", "another", NULL};
-                REQUIRE_STRING(config_get_string_value(config, "NO_SPACES"), "[One,String,Next,to,another]");
+                REQUIRE_EQ(config_get_string_value(config, "NO_SPACES"), "[One,String,Next,to,another]");
 
                 char **strings = config_get_array_value(config, "NO_SPACES");
                 REQUIRE_STRING_ARRAY(strings_expected, strings, 5);
@@ -108,14 +108,14 @@ TEST_SUITE("Config") {
             char *key = "PORT";
             char *expected = "3000";
             config_set_value(config, key, expected);
-            REQUIRE_STRING(config_get_string_value(config, key), expected);
+            REQUIRE_EQ(config_get_string_value(config, key), expected);
         }
 
         SUBCASE("should add an non existing value to the config") {
             char *key = "ANEWKEY";
             char *expected = "lorem ipsum";
             config_set_value(config, key, expected);
-            REQUIRE_STRING(config_get_string_value(config, key), expected);
+            REQUIRE_EQ(config_get_string_value(config, key), expected);
         }
 
         config_destroy(config);
@@ -139,7 +139,7 @@ TEST_SUITE("Config") {
             config_set_value(config, key, expected);
             config_save_in_file(config, new_file_path);
             t_config *new_config = config_create(new_file_path);
-            REQUIRE_STRING(config_get_string_value(new_config, key), expected);
+            REQUIRE_EQ(config_get_string_value(new_config, key), expected);
             config_destroy(new_config);
         }
 

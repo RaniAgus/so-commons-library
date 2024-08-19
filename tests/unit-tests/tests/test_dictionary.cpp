@@ -18,7 +18,7 @@
 
 void _assert_key(char *got, const char *expected) {
     REQUIRE_NON_NULL(got);
-    REQUIRE_STRING(got, expected);
+    REQUIRE_EQ(got, expected);
 }
 
 TEST_SUITE("Dictionary") {

@@ -18,19 +18,19 @@
 
 void _assert_names(char *name, const char *expected) {
     REQUIRE_NON_NULL(name);
-    REQUIRE_STRING(name, expected);
+    REQUIRE_EQ(name, expected);
 }
 
 TEST_SUITE("String") {
     TEST_CASE("itoa") {
         char *newString = string_itoa(15);
-        REQUIRE_STRING(newString, "15");
+        REQUIRE_EQ(newString, "15");
         free(newString);
     }
 
     TEST_CASE("from_format") {
         char *newString = string_from_format("%s %s %d", "Hello", "world", 23);
-        REQUIRE_STRING(newString, "Hello world 23");
+        REQUIRE_EQ(newString, "Hello world 23");
         free(newString);
     }
 
@@ -40,7 +40,7 @@ TEST_SUITE("String") {
         string_append(&string, " ");
         string_append(&string, "world");
 
-        REQUIRE_STRING(string, "Hello world");
+        REQUIRE_EQ(string, "Hello world");
 
         free(string);
     }
@@ -49,7 +49,7 @@ TEST_SUITE("String") {
         char *string = string_new();
 
         string_append_with_format(&string, "%s %s %d", "Hello", "world", 23);
-        REQUIRE_STRING(string, "Hello world 23");
+        REQUIRE_EQ(string, "Hello world 23");
 
         free(string);
     }
@@ -65,7 +65,7 @@ TEST_SUITE("String") {
     TEST_CASE("repeat") {
         char *string = string_repeat('a', 10);
 
-        REQUIRE_STRING(string, "aaaaaaaaaa");
+        REQUIRE_EQ(string, "aaaaaaaaaa");
         REQUIRE_EQ(strlen(string), 10);
 
         free(string);
@@ -75,7 +75,7 @@ TEST_SUITE("String") {
         char *string = string_duplicate("Hello World");
         string_to_upper(string);
 
-        REQUIRE_STRING(string, "HELLO WORLD");
+        REQUIRE_EQ(string, "HELLO WORLD");
 
         free(string);
     }
@@ -84,7 +84,7 @@ TEST_SUITE("String") {
         char *string = string_duplicate("Hello World");
         string_to_lower(string);
 
-        REQUIRE_STRING(string, "hello world");
+        REQUIRE_EQ(string, "hello world");
 
         free(string);
     }
@@ -94,22 +94,22 @@ TEST_SUITE("String") {
 
         string = string_duplicate("hello world");
         string_capitalized(string);
-        REQUIRE_STRING(string, "Hello world");
+        REQUIRE_EQ(string, "Hello world");
         free(string);
 
         string = string_duplicate("HELLO WORLD");
         string_capitalized(string);
-        REQUIRE_STRING(string, "Hello world");
+        REQUIRE_EQ(string, "Hello world");
         free(string);
 
         string = string_duplicate("hi");
         string_capitalized(string);
-        REQUIRE_STRING(string, "Hi");
+        REQUIRE_EQ(string, "Hi");
         free(string);
 
         string = string_duplicate("h");
         string_capitalized(string);
-        REQUIRE_STRING(string, "H");
+        REQUIRE_EQ(string, "H");
         free(string);
     }
 
@@ -119,12 +119,12 @@ TEST_SUITE("String") {
 
             string = string_duplicate("Hola");
             string_trim_left(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
 
             string = string_duplicate("   Hola");
             string_trim_left(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
         }
 
@@ -133,12 +133,12 @@ TEST_SUITE("String") {
 
             string = string_duplicate("Hola");
             string_trim_right(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
 
             string = string_duplicate("Hola    ");
             string_trim_right(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
         }
 
@@ -147,22 +147,22 @@ TEST_SUITE("String") {
 
             string = string_duplicate("Hola");
             string_trim(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
 
             string = string_duplicate("    Hola");
             string_trim(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
 
             string = string_duplicate("Hola    ");
             string_trim(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
 
             string = string_duplicate("    Hola    ");
             string_trim(&string);
-            REQUIRE_STRING(string, "Hola");
+            REQUIRE_EQ(string, "Hola");
             free(string);
         }
     }
@@ -303,23 +303,21 @@ TEST_SUITE("String") {
         SUBCASE("substring_empty") {
             char *original_word = "";
             char *substring = string_substring(original_word, 0, 3);
-            REQUIRE_STRING(substring, original_word);
-            REQUIRE_NE(substring, original_word);
+            REQUIRE_EQ(substring, original_word);
             free(substring);
         }
 
         SUBCASE("substring_with_short_string") {
             char *original_word = "hola";
             char *substring = string_substring(original_word, 0, 14);
-            REQUIRE_STRING(substring, original_word);
-            REQUIRE_NE(substring, original_word);
+            REQUIRE_EQ(substring, original_word);
             free(substring);
         }
 
         SUBCASE("substring_with_large_string") {
             char *original_word = "hola mundo c!";
             char *substring = string_substring(original_word, 0, 4);
-            REQUIRE_STRING(substring, "hola");
+            REQUIRE_EQ(substring, "hola");
             REQUIRE_NE(substring, original_word);
             free(substring);
         }
@@ -327,7 +325,7 @@ TEST_SUITE("String") {
         SUBCASE("substring_from_other_start") {
             char *original_word = "hola mundo!";
             char *substring = string_substring(original_word, 5, strlen(original_word) - 5);
-            REQUIRE_STRING(substring, "mundo!");
+            REQUIRE_EQ(substring, "mundo!");
             REQUIRE_NE(substring, original_word);
             free(substring);
         }
@@ -335,7 +333,7 @@ TEST_SUITE("String") {
         SUBCASE("substring_extract_internal_text") {
             char *original_word = "hola mundo";
             char *substring = string_substring(original_word, 2, 5);
-            REQUIRE_STRING(substring, "la mu");
+            REQUIRE_EQ(substring, "la mu");
             REQUIRE_NE(substring, original_word);
             free(substring);
         }
@@ -343,40 +341,35 @@ TEST_SUITE("String") {
         SUBCASE("substring_with_equal_large") {
             char *original_word = "hola";
             char *substring = string_substring(original_word, 0, 4);
-            REQUIRE_STRING(substring, original_word);
-            REQUIRE_NE(substring, original_word);
+            REQUIRE_EQ(substring, original_word);
             free(substring);
         }
 
         SUBCASE("substring_from_middle") {
             char *original = "hola mundo!";
             char *substring = string_substring_from(original, 5);
-            REQUIRE_STRING(substring, "mundo!");
-            REQUIRE_NE(substring, original);
+            REQUIRE_EQ(substring, "mundo!");
             free(substring);
         }
 
         SUBCASE("substring_from_start") {
             char *original = "hola mundo!";
             char *substring = string_substring_from(original, 0);
-            REQUIRE_STRING(substring, original);
-            REQUIRE_NE(substring, original);
+            REQUIRE_EQ(substring, original);
             free(substring);
         }
 
         SUBCASE("substring_until_middle") {
             char *original = "hola mundo!";
             char *substring = string_substring_until(original, 5);
-            REQUIRE_STRING(substring, "hola ");
-            REQUIRE_NE(substring, original);
+            REQUIRE_EQ(substring, "hola ");
             free(substring);
         }
 
         SUBCASE("substring_until_end") {
             char *original = "hola mundo!";
             char *substring = string_substring_until(original, strlen(original));
-            REQUIRE_STRING(substring, original);
-            REQUIRE_NE(substring, original);
+            REQUIRE_EQ(substring, original);
             free(substring);
         }
     }
@@ -400,7 +393,7 @@ TEST_SUITE("String") {
             int i;
             for (i = 1; i <= 5; ++i) {
                 char *value = string_from_format("%d", i);
-                REQUIRE_STRING(numbers_array[i - 1], value);
+                REQUIRE_EQ(numbers_array[i - 1], value);
                 free(value);
             }
 
@@ -416,21 +409,21 @@ TEST_SUITE("String") {
         SUBCASE("reverse with length of a string is even") {
             char *word = "CASA";
             char *reverse_word = string_reverse(word);
-            REQUIRE_STRING(reverse_word, "ASAC");
+            REQUIRE_EQ(reverse_word, "ASAC");
             free(reverse_word);
         }
 
         SUBCASE("reverse with length of a string is odd") {
             char *word = "FRUTA";
             char *reverse_word = string_reverse(word);
-            REQUIRE_STRING(reverse_word, "ATURF");
+            REQUIRE_EQ(reverse_word, "ATURF");
             free(reverse_word);
         }
 
         SUBCASE("reverse with empty string") {
             char *word = "";
             char *reverse_word = string_reverse(word);
-            REQUIRE_STRING(reverse_word, "");
+            REQUIRE_EQ(reverse_word, "");
             free(reverse_word);
         }
     }
@@ -464,7 +457,7 @@ TEST_SUITE("String") {
         SUBCASE("remove the last element") {
             char *name = string_array_pop(names);
 
-            REQUIRE_STRING(name, "Daniela");
+            REQUIRE_EQ(name, "Daniela");
 
             REQUIRE_EQ(string_array_size(names), 3);
 
@@ -475,7 +468,7 @@ TEST_SUITE("String") {
         SUBCASE("replace an element") {
             char *name = string_array_replace(names, 2, "Damian");
 
-            REQUIRE_STRING(name, "Sebastian");
+            REQUIRE_EQ(name, "Sebastian");
 
             const char *expected[] = {"Gaston", "Matias", "Damian", "Daniela", NULL};
             REQUIRE_STRING_ARRAY(names, expected, 4);
